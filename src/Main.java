@@ -7,69 +7,99 @@ public class Main {
         String path = System.getProperty("user.home");
         boolean exit = false;
 
+        System.out.println("********************************");
+        System.out.println("CMDSim CLI");
+        System.out.println("Copyright (c) 2026 Luca Ballabio");
+        System.out.println("********************************");
+        System.out.println("\nType 'help' for available commands");
+
         do {
             File f = new File(path);
-            System.out.print(f.getAbsolutePath() + "> ");
+            System.out.print("\n"+f.getAbsolutePath() + "> ");
 
             String input = sc.nextLine().trim();
             if (input.isEmpty()) continue;
 
-            String[] parti = input.split(" ", 2);
-            String cmd = parti[0].toLowerCase();
-            String argomento = (parti.length > 1) ? parti[1] : "";
+            String[] parts = input.split(" ", 2);
+            String cmd = parts[0].toLowerCase();
+            String argument = (parts.length > 1) ? parts[1] : "";
 
             switch (cmd) {
                 case "dir":
-                    File[] lista = f.listFiles();
+                    File[] list = f.listFiles();
                     if (f.exists()) {
-                        System.out.println("\n    Directory di " + f.getAbsolutePath() + "\n");
-                        if (lista != null) {
-                            for (File file : lista) {
+                        System.out.println("\n    Directory of " + f.getAbsolutePath() + "\n");
+                        if (list != null) {
+                            for (File file : list) {
                                 String info = file.isDirectory() ? "  <DIR>  " : "         ";
                                 System.out.println(TimeConverter.converti(file.lastModified()) + info + file.getName());
                             }
                         }
                         System.out.println();
                     } else {
-                        System.out.println("Empty path");
+                        System.out.println("Warning: Path not found.");
+                    }
+                    break;
+
+                case "tree":
+                    boolean proceed = true;
+                    System.out.println("Analyzing...");
+                    try {
+                        Utils.checkComplexity(f, System.currentTimeMillis(), 1000);
+                    } catch (Utils.TimeoutException e) {
+                        System.out.print("Warning: Very large directory. Display anyway? (y/n): ");
+                        String choice = sc.nextLine().toLowerCase();
+                        if (!choice.equals("y")) {
+                            proceed = false;
+                        }
+                    }
+
+                    if (proceed) {
+                        System.out.println("Folder PATH listing");
+                        System.out.println(f.getAbsolutePath());
+                        Utils.printTree(f, "");
+                    } else {
+                        System.out.println("Operation aborted.");
                     }
                     break;
 
                 case "cd":
-                    if (argomento.isEmpty()) {
+                    if (argument.isEmpty()) {
                         path = System.getProperty("user.home");
-                    } else if (argomento.equals("..")) {
+                    } else if (argument.equals("..")) {
                         File parent = f.getParentFile();
-                        if (parent != null) {
-                            path = parent.getAbsolutePath();
-                        }
+                        if (parent != null) path = parent.getAbsolutePath();
                     } else {
-                        File nuovaDir = new File(argomento);
-                        if (!nuovaDir.isAbsolute()) {
-                            nuovaDir = new File(f, argomento);
-                        }
+                        File nextDir = new File(argument);
+                        if (!nextDir.isAbsolute()) nextDir = new File(f, argument);
 
-                        if (nuovaDir.exists() && nuovaDir.isDirectory()) {
-                            path = nuovaDir.getAbsolutePath();
+                        if (nextDir.exists() && nextDir.isDirectory()) {
+                            path = nextDir.getAbsolutePath();
                         } else {
-                            System.out.println("Path not found");
+                            System.out.println("Warning: Cannot find specified path.");
                         }
                     }
                     break;
 
                 case "cd..":
                     File parent = f.getParentFile();
-                    if (parent != null) {
-                        path = parent.getAbsolutePath();
-                    }
+                    if (parent != null) path = parent.getAbsolutePath();
                     break;
 
                 case "exit":
                     exit = true;
                     break;
 
+                case "help":
+                    System.out.println("DIR         -->         Display current directory");
+                    System.out.println("TREE         -->        Display tree (Protected use)");
+                    System.out.println("CD          -->         Change directory to home directory");
+                    System.out.println("CD..        -->         Change directory up one level");
+                    System.out.println("CD <path>   -->         Change directory to specified path");
+                    break;
+
                 default:
-                    System.out.println("Unknown command");
+                    System.out.println("'" + cmd + "' is not recognized as a command.");
                     break;
             }
         } while (!exit);
