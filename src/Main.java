@@ -4,7 +4,8 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        File f = new File("X:\\Users\\BALLABIO.LUCA");
+        String path = System.getProperty("user.home");
+        File f = new File(path);
         File[] lista = f.listFiles();
 
         boolean exit = false;
@@ -18,9 +19,9 @@ public class Main {
                         System.out.println("\n    Directory di " + f.getAbsolutePath() + "\n");
                         for (int i = 0; i < lista.length; i++) {
                             if (lista[i].isDirectory()) {
-                                System.out.println(lista[i].lastModified() + "  <DIR>  " + lista[i].getName());
+                                System.out.println(TimeConverter.converti(lista[i].lastModified()) + "  <DIR>  " + lista[i].getName());
                             } else {
-                                System.out.println(lista[i].lastModified() + "         " + lista[i].getName());
+                                System.out.println(TimeConverter.converti(lista[i].lastModified()) + "         " + lista[i].getName());
                             }
                         }
                     }else{
